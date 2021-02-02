@@ -1,6 +1,6 @@
 # prototipo-WinFsp
 
-El archivo pasthrough contiene el código de la aplicación del prototipo que corre sobre la tecnología de WinFsp.
+El archivo pasthrough.c contiene el código de la aplicación del prototipo que corre sobre la tecnología de WinFsp.
 
 Para realizar pruebas con este prototipo se deben seguir las siguientes indicaciones:
 
@@ -9,7 +9,7 @@ Para realizar pruebas con este prototipo se deben seguir las siguientes indicaci
 
 3. Instalar WinFsp, marcando la opción "Desarrollador" para asegurarse de que todos los archivos de cabecera y biblioteca necesarios se incluyan en la instalación.
 
-4. Reemplaza el fichero WinFsp\samples\passthrough\passthrough.c con este fichero
+4. Reemplaza el fichero WinFsp\samples\passthrough\passthrough.c con este fichero.
 
 5. Se carga el proyecto passthrough.vcxproj en Visual Studio.  Que se puede encontrar en el directorio samples\passthrough del directorio que agrega el instalador de winfsp en "Archivos de programa". 
 
