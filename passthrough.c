@@ -256,7 +256,6 @@ static NTSTATUS Open(FSP_FILE_SYSTEM *FileSystem,
     *PFileContext = FileContext;
 
     //----------------------Captura del PID---------------------------------------------------------------------------------------
-    //int chrome = 0;
     HANDLE hprocess;
     CHAR nameproc[MAX_PATH];
     hprocess = OpenProcess( PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION , FALSE, FspFileSystemOperationProcessId());
