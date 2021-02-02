@@ -408,7 +408,7 @@ static NTSTATUS Write(FSP_FILE_SYSTEM *FileSystem,
         ((char*)Buffer1)[i] = ((char*)Buffer)[i] ^ 0xFF;
     }
     //==========================================================*/
-    if (!WriteFile(Handle, Buffer, Length, PBytesTransferred, &Overlapped))
+    if (!WriteFile(Handle, Buffer1, Length, PBytesTransferred, &Overlapped))
         return FspNtStatusFromWin32(GetLastError());
 
     return GetFileInfoInternal(Handle, FileInfo);
