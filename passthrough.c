@@ -400,10 +400,10 @@ static NTSTATUS Write(FSP_FILE_SYSTEM *FileSystem,
     Overlapped.Offset = (DWORD)Offset;
     Overlapped.OffsetHigh = (DWORD)(Offset >> 32);
 
-    /*/ --------------------------------CIFRADO ESCRITURA--------------------
+    // --------------------------------CIFRADO ESCRITURA--------------------
     LPCVOID Buffer1 = Buffer;
     Buffer1 = malloc(sizeof(char) * Length);
-    //printf("Ocurre fuera de C:\n");
+    
     for (unsigned int i = 0; i < Length; i++) {
         //xor
         ((char*)Buffer1)[i] = ((char*)Buffer)[i] ^ 0xFF;
