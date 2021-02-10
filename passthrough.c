@@ -362,11 +362,21 @@ static NTSTATUS Read(FSP_FILE_SYSTEM *FileSystem,
     LPVOID Buffer1 = Buffer;
     if (Handle == tabla.hproc) {
         Buffer1 = malloc(sizeof(char) * Length);
-        for (unsigned int i = 0; i < Length; i++) {
-            //xor
-            ((char*)Buffer)[i] = ((char*)Buffer1)[i] ^ 0xFF;
-        }
+    
+    if (!ReadFile(Handle, Buffer1, Length, PBytesTransferred, &Overlapped))
+        return FspNtStatusFromWin32(GetLastError());
+
+    if (Handle == tabla.hproc) {
+       for (unsigned int i = 0; i < Length; i++) {
+        //xor
+        ((char*)Buffer)[i] = ((char*)Buffer1)[i] ^ 0xFF;
+       }
     }
+            
+    if (Handle == tabla.hproc) {
+            free(Buffer1);
+    }
+    
     //------------------------------------------------------------------------------------------------------------------------------*/
 
     if (!ReadFile(Handle, Buffer1, Length, PBytesTransferred, &Overlapped))
@@ -410,7 +420,8 @@ static NTSTATUS Write(FSP_FILE_SYSTEM *FileSystem,
     //==========================================================*/
     if (!WriteFile(Handle, Buffer1, Length, PBytesTransferred, &Overlapped))
         return FspNtStatusFromWin32(GetLastError());
-
+    
+    free(Buffer1);
     return GetFileInfoInternal(Handle, FileInfo);
 }
 
