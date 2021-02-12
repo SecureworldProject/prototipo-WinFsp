@@ -42,8 +42,7 @@ struct TABLA
     HANDLE hproc;
     CHAR pid;
     PWSTR Path;
-    BOOL flag;
-    //struct TABLA* siguiente;
+    BOOL flag;    
 }tabla[100];
 //==================================================================
 
