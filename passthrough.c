@@ -22,6 +22,7 @@
 #include <winfsp/winfsp.h>
 #include <strsafe.h>
 #include <Psapi.h>
+ 
 
 
 #define PROGNAME                        "passthrough"
@@ -35,6 +36,17 @@
 #define ConcatPath(Ptfs, FN, FP)        (0 == StringCbPrintfW(FP, sizeof FP, L"%s%s", Ptfs->Path, FN))
 #define HandleFromContext(FC)           (((PTFS_FILE_CONTEXT *)(FC))->Handle)
 
+//--------------------------Tabla------------------------------------------------------------------
+struct TABLA
+{
+    HANDLE hproc;
+    CHAR pid;
+    PWSTR Path;
+    BOOL flag;
+    //struct TABLA* siguiente;
+}tabla[100];
+//==================================================================
+
 typedef struct
 {
     FSP_FILE_SYSTEM *FileSystem;
@@ -47,15 +59,6 @@ typedef struct
     PVOID DirBuffer;
 } PTFS_FILE_CONTEXT;
 
-//----------------Estructura de la Tabla-------------------------
-struct TABLA
-{
-    HANDLE hproc;
-    CHAR pid;
-    PWSTR Path;
-
-} tabla;
-//-----------------------------------------------------------------*/
 
 static NTSTATUS GetFileInfoInternal(HANDLE Handle, FSP_FSCTL_FILE_INFO *FileInfo)
 {
@@ -254,23 +257,35 @@ static NTSTATUS Open(FSP_FILE_SYSTEM *FileSystem,
     }
 
     *PFileContext = FileContext;
+ 
 
     //----------------------Captura del PID---------------------------------------------------------------------------------------
     HANDLE hprocess;
     CHAR nameproc[MAX_PATH];
-    hprocess = OpenProcess( PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION , FALSE, FspFileSystemOperationProcessId());
-    if (GetProcessImageFileNameA(hprocess, nameproc, sizeof(nameproc)/ sizeof(*nameproc))!=0)
+    
+    hprocess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION, FALSE, FspFileSystemOperationProcessId());
+    if (GetProcessImageFileNameA(hprocess, nameproc, sizeof(nameproc) / sizeof(*nameproc)) != 0)
     {
-        if (strstr(nameproc, "chrome.exe")!=NULL)
+        
+        if (strstr(nameproc, "chrome.exe") != NULL)
         {
-            printf("Abierto por chrome, %s/n", nameproc);
-            tabla.pid = FspFileSystemOperationProcessId();
-            tabla.hproc = FileContext->Handle;
-            tabla.Path = FullPath;
+            //printf("Abierto por chrome, %s/n", nameproc);
+            for (int i = 0; i < 100; i++)
+            {
+                if (tabla[i].flag == 0 || tabla[i].flag==NULL) {
+                    tabla[i].pid = FspFileSystemOperationProcessId();
+                    tabla[i].hproc = FileContext->Handle;
+                    tabla[i].Path = FullPath;
+                    tabla[i].flag = 1;
+                }
+                
+            }
             
+
         }
     }
     //--------------------------------------------------------------------------------------------------------------------*/
+
 
     return GetFileInfoInternal(FileContext->Handle, FileInfo);
 }
@@ -339,10 +354,18 @@ static VOID Close(FSP_FILE_SYSTEM *FileSystem,
     CloseHandle(Handle);
 
     //------------------------Captura de handle en Close para limpiar TABLA------------------------------------------------------------
-    if (Handle == tabla.hproc) {
-        printf("proceso cerrado");
-        
+    for (int i = 0; i < 100; i++) {
+        if (tabla[i].flag == 1) {
+            //printf("CERRADO por chrome, %s/n");
+            tabla[i].pid = 0;
+            tabla[i].hproc = 0;
+            tabla[i].Path = 0;
+            tabla[i].flag = 0;
+        }
+                
+                
     }
+   
     //--------------------------------------------------------------------------------------------------*/
     FspFileSystemDeleteDirectoryBuffer(&FileContext->DirBuffer);
     free(FileContext);
@@ -357,34 +380,38 @@ static NTSTATUS Read(FSP_FILE_SYSTEM *FileSystem,
 
     Overlapped.Offset = (DWORD)Offset;
     Overlapped.OffsetHigh = (DWORD)(Offset >> 32);
-
-    // --------------------------------CIFRADO LECTURA-----------------------------------------------------------------------
-    LPVOID Buffer1 = Buffer;
-    if (Handle == tabla.hproc) {
-        Buffer1 = malloc(sizeof(char) * Length);
     
-    if (!ReadFile(Handle, Buffer1, Length, PBytesTransferred, &Overlapped))
-        return FspNtStatusFromWin32(GetLastError());
+    // --------------------------------CIFRADO LECTURA---------------------------------------------------------------------- -
+    LPVOID Buffer1 = Buffer;
+    for (int i = 0; i < 100; i++) {
+       if (Handle == tabla[i].hproc)
+         Buffer1 = malloc(sizeof(char) * Length);
+    
+         
+       if (!ReadFile(Handle, Buffer1, Length, PBytesTransferred, &Overlapped))
+         return FspNtStatusFromWin32(GetLastError());
 
-    if (Handle == tabla.hproc) {
-       for (unsigned int i = 0; i < Length; i++) {
-        //xor
-        ((char*)Buffer)[i] = ((char*)Buffer1)[i] ^ 0xFF;
+    
+
+       if (Handle == tabla[i].hproc) {
+         for (unsigned int i = 0; i < Length; i++) {
+         //xor
+           ((char*)Buffer)[i] = ((char*)Buffer1)[i] ^ 0xFF;
+         }
        }
-    }
-            
-    if (Handle == tabla.hproc) {
+   
+    
+   
+       if (Handle == tabla[i].hproc) {
             free(Buffer1);
+       }
     }
     
     //------------------------------------------------------------------------------------------------------------------------------*/
-
-    if (!ReadFile(Handle, Buffer1, Length, PBytesTransferred, &Overlapped))
-        return FspNtStatusFromWin32(GetLastError());
-            
-    
+     
     return STATUS_SUCCESS;
 }
+
 
 static NTSTATUS Write(FSP_FILE_SYSTEM *FileSystem,
     PVOID FileContext, PVOID Buffer, UINT64 Offset, ULONG Length,
@@ -422,6 +449,7 @@ static NTSTATUS Write(FSP_FILE_SYSTEM *FileSystem,
         return FspNtStatusFromWin32(GetLastError());
     
     free(Buffer1);
+
     return GetFileInfoInternal(Handle, FileInfo);
 }
 
@@ -1000,8 +1028,9 @@ static NTSTATUS SvcStop(FSP_SERVICE *Service)
 
 int wmain(int argc, wchar_t **argv)
 {
+    
     if (!NT_SUCCESS(FspLoad(0)))
         return ERROR_DELAY_LOAD_FAILED;
-
+    
     return FspServiceRun(L"" PROGNAME, SvcStart, SvcStop, 0);
 }
