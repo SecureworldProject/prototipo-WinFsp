@@ -43,7 +43,8 @@ struct TABLA
     CHAR pid;
     PWSTR Path;
     BOOL flag;    
-}tabla[100];
+}tabla[100]= {NULL};
+
 //==================================================================
 
 typedef struct
@@ -354,15 +355,14 @@ static VOID Close(FSP_FILE_SYSTEM *FileSystem,
 
     //------------------------Captura de handle en Close para limpiar TABLA------------------------------------------------------------
     for (int i = 0; i < 100; i++) {
-        if (tabla[i].flag == 1) {
+        if (tabla[i].flag == 1 && tabla[i].hproc == Handle) {
             //printf("CERRADO por chrome, %s/n");
-            tabla[i].pid = 0;
-            tabla[i].hproc = 0;
-            tabla[i].Path = 0;
+            tabla[i].pid = NULL;
+            tabla[i].hproc = NULL;
+            tabla[i].Path = NULL;
             tabla[i].flag = 0;
         }
-                
-                
+               
     }
    
     //--------------------------------------------------------------------------------------------------*/
