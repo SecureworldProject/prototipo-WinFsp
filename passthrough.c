@@ -272,7 +272,7 @@ static NTSTATUS Open(FSP_FILE_SYSTEM *FileSystem,
             //printf("Abierto por chrome, %s/n", nameproc);
             for (int i = 0; i < 100; i++)
             {
-                if (tabla[i].flag == 0 || tabla[i].flag==NULL) {
+                if (tabla[i].flag==NULL) {
                     tabla[i].pid = FspFileSystemOperationProcessId();
                     tabla[i].hproc = FileContext->Handle;
                     tabla[i].Path = FullPath;
@@ -360,7 +360,7 @@ static VOID Close(FSP_FILE_SYSTEM *FileSystem,
             tabla[i].pid = NULL;
             tabla[i].hproc = NULL;
             tabla[i].Path = NULL;
-            tabla[i].flag = 0;
+            tabla[i].flag = NULL;
         }
                
     }
