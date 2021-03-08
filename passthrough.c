@@ -436,7 +436,7 @@ static NTSTATUS Write(FSP_FILE_SYSTEM *FileSystem,
     Overlapped.Offset = (DWORD)Offset;
     Overlapped.OffsetHigh = (DWORD)(Offset >> 32);
 
-    /*/ --------------------------------CIFRADO ESCRITURA--------------------
+    // --------------------------------CIFRADO ESCRITURA--------------------
     LPCVOID Buffer1 = Buffer;
     Buffer1 = malloc(sizeof(char) * Length);
     
@@ -445,10 +445,10 @@ static NTSTATUS Write(FSP_FILE_SYSTEM *FileSystem,
         ((char*)Buffer1)[i] = ((char*)Buffer)[i] ^ 0xFF;
     }
     //==========================================================*/
-    if (!WriteFile(Handle, Buffer, Length, PBytesTransferred, &Overlapped))
+    if (!WriteFile(Handle, Buffer1, Length, PBytesTransferred, &Overlapped))
         return FspNtStatusFromWin32(GetLastError());
     
-    //free(Buffer1);
+    free(Buffer1);
 
     return GetFileInfoInternal(Handle, FileInfo);
 }
