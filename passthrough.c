@@ -41,7 +41,7 @@ struct TABLA
 {
     HANDLE hproc;
     CHAR pid;
-    PWSTR Path;
+    PWSTR path;
     BOOL flag;    
 }tabla[100]= {NULL};
 
@@ -275,7 +275,7 @@ static NTSTATUS Open(FSP_FILE_SYSTEM *FileSystem,
                 if (tabla[i].flag==NULL) {
                     tabla[i].pid = FspFileSystemOperationProcessId();
                     tabla[i].hproc = FileContext->Handle;
-                    tabla[i].Path = FullPath;
+                    tabla[i].path = FullPath;
                     tabla[i].flag = 1;
                 }
                 
@@ -359,7 +359,7 @@ static VOID Close(FSP_FILE_SYSTEM *FileSystem,
             //printf("CERRADO por chrome, %s/n");
             tabla[i].pid = NULL;
             tabla[i].hproc = NULL;
-            tabla[i].Path = NULL;
+            tabla[i].path = NULL;
             tabla[i].flag = NULL;
         }
                
