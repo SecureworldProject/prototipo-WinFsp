@@ -11,7 +11,7 @@ Para realizar pruebas con este prototipo se deben seguir las siguientes indicaci
 
 4. Reemplaza el fichero WinFsp\samples\passthrough\passthrough.c con este fichero.
 
-5. Se carga el proyecto passthrough.vcxproj en Visual Studio.  Que se puede encontrar en el directorio samples\passthrough del directorio que agrega el instalador de winfsp en "Archivos de programa". 
+5. Se carga el proyecto passthrough.vcxproj en Visual Studio.  Que se puede encontrar en el directorio samples\passthrough del directorio que agrega el instalador de winsp en "Archivos de programa (x86)". 
 
 6. Una vez cargado el proyecto se compila.
 
